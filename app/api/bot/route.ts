@@ -2,6 +2,7 @@ import { SessionData, UserState } from "@/types";
 import { hydrate, HydrateFlavor } from "@grammyjs/hydrate";
 import { freeStorage } from "@grammyjs/storage-free";
 import { Bot, Context, session, SessionFlavor, webhookCallback } from "grammy";
+import { NextApiRequest, NextApiResponse } from "next";
 
 type MyContext = HydrateFlavor<Context> & SessionFlavor<SessionData>;
 
@@ -99,7 +100,16 @@ bot.catch((err) => console.error('[ Bot error ]', err));
 
 // bot.start();
 
-export const POST = webhookCallback(bot, 'std/http');
+// export const POST = webhookCallback(bot, 'std/http');
+
+export async function POST(req: Request) {
+  // Pass raw body to the webhook callback
+  const update = req.body;
+  console.log('POST_req', req);
+  console.log('POST_body', update);
+  const handler = webhookCallback(bot, 'std/http');
+  await handler(req);
+}
 
 export const GET = async () => { 
   return Response.json('Hello from Bot API!');

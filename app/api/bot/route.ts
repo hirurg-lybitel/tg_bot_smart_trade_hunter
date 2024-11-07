@@ -131,12 +131,14 @@ bot.catch((err) => console.error('[ Bot error ]', err));
 export async function POST(req: Request) {
   const clonedRequest = req.clone();
   const body = await clonedRequest.json();
-  console.log('POST_body', body);
+  console.log('POST_body', { cond: 'type' in body, body });
 
   try {
     /** Если получили сообщение от tradingView */
     if ('type' in body) {
+      console.log('we are at pont 1');
       if (body.type === 'bot') {
+        console.log('we are at pont 2');
         const tv_message = body as TVMessage;
   
         const tv_message_details: TVOrderDetails = JSON.parse(tv_message.order_details ?? null);
@@ -205,6 +207,8 @@ export async function POST(req: Request) {
         return NextResponse.json('OK');
       }
     }
+
+    console.log('POST_redirect to tg', 'type' in body);
 
     /** Если получили сообщение от telegram */
     const handler = webhookCallback(bot, 'std/http');

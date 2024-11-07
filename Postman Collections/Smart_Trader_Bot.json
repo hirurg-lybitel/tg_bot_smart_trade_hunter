@@ -98,23 +98,23 @@
 		{
 			"listen": "prerequest",
 			"script": {
+				"id": "974891b0-18a7-475c-9b55-7dce73aea98b",
 				"type": "text/javascript",
 				"packages": {},
 				"exec": [
 					""
-				],
-				"id": "2af2d756-2b45-4382-87d2-f63cb5f7c5e3"
+				]
 			}
 		},
 		{
 			"listen": "test",
 			"script": {
+				"id": "3e04ab17-9bcd-4aaa-aa4c-a348a1c0466c",
 				"type": "text/javascript",
 				"packages": {},
 				"exec": [
 					""
-				],
-				"id": "56092b3d-39aa-4ef6-a78b-69f80d5948c6"
+				]
 			}
 		}
 	],

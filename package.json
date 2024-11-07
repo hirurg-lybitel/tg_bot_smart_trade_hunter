@@ -11,6 +11,7 @@
   "dependencies": {
     "@grammyjs/hydrate": "^1.4.1",
     "@grammyjs/storage-free": "^2.4.2",
+    "@vercel/kv": "^3.0.0",
     "cron-converter": "^2.0.1",
     "grammy": "^1.29.0",
     "lz-string": "^1.5.0",
@@ -27,7 +28,10 @@
     "typescript": "^5.4.2"
   },
   "eslintConfig": {
-    "extends": ["next/core-web-vitals", "prettier"],
+    "extends": [
+      "next/core-web-vitals",
+      "prettier"
+    ],
     "rules": {
       "comma-spacing": "error",
       "semi": "error",

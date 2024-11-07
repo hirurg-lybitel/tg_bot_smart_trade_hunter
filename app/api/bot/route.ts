@@ -1,8 +1,10 @@
-import { SessionData, UserState } from "@/types";
+import { SessionData, TV_OrderDetailsType, TV_OrderDirection, TVMessage, TVOrderDetails, UserInfo, UserState } from "@/types";
 import { hydrate, HydrateFlavor } from "@grammyjs/hydrate";
 import { freeStorage } from "@grammyjs/storage-free";
 import { Bot, Context, session, SessionFlavor, webhookCallback } from "grammy";
-import { NextApiRequest, NextApiResponse } from "next";
+import { kv } from '@vercel/kv';
+import { NextResponse } from "next/server";
+import { parseStringToMD } from "@/helpers";
 
 type MyContext = HydrateFlavor<Context> & SessionFlavor<SessionData>;
 
@@ -36,6 +38,9 @@ bot.command('start', async (ctx) => {
   const { userStates, userConfig } = ctx.session;
   userStates[chatId] = UserState.AUTH;
 
+  const users = await kv.get<UserInfo[]>('users') ?? [];
+  console.log('users', { users, chatId });
+
 
   const storage = await botStorage.read(chatId.toString());
 
@@ -44,7 +49,32 @@ bot.command('start', async (ctx) => {
   if (isSubscribed) {
     return ctx.reply('Вы уже подписаны на сигналы.');
   }
-    
+
+  // const signal = parseStringToMD(`
+  //   🚨 *Smart Trader Notification* 🚨\n
+  //   *BTCUSDT* - buy
+  //   ${72589.62}\n
+  //   🏆 *Take Profits*:
+  //   \\#1: ${73579.76}
+  //   \\#2: ${74549}
+  //   \\#3: ${75509.4}\n
+  //   ❌ *Stop Loss*: ${69589.62}\n
+  //   📈 Удачи в торговле\\!`);
+
+  // const signal = parseStringToMD(`
+  //   🚨 *Smart Trader Notification* 🚨\n
+  //   *BTCUSDT* - exit\n
+  //   *Exit price*: ${72589.62}`);  
+
+  // await ctx.reply(
+  //   signal,
+  //   {
+  //     parse_mode: 'MarkdownV2'
+  //   }
+  // );
+
+  // return;
+
   await ctx.reply(
     `*Добро пожаловать, ${userName}*\\.\n\nВведите ваш личный ключ доступа, чтобы начать работу бота\\.`,
     {
@@ -54,7 +84,19 @@ bot.command('start', async (ctx) => {
 });
 
 bot.command('stop', async (ctx) => {
+  const chatId = ctx.chat?.id;
+  if (!chatId) return;
+
   ctx.session = initial();
+
+  const users = await kv.get<UserInfo[]>('users') ?? [];
+
+  const index = users.findIndex(({ chatId: userChatId }) => userChatId === chatId );
+  if (index >= 0) {
+    users[index].isActive = false;
+    
+    kv.set('users', users);
+  }
 
   await ctx.reply(
     `Больше я не буду присылать вам сигналы 😔`,
@@ -83,6 +125,21 @@ bot.on(':text', async ctx => {
         return ctx.reply('Неверный ключ. Попробуйте ввести другой.');
       }
 
+      const users = await kv.get<UserInfo[]>('users') ?? [];
+
+      const index = users.findIndex(({ chatId: userChatId }) => userChatId === chatId );
+      if (index < 0) {
+        const newUser: UserInfo = {
+          chatId,
+          isActive: true
+        };
+        users.push(newUser);
+      } else {
+        users[index].isActive = true;
+      }
+
+      kv.set('users', users);
+
       Object.assign(userConfig, {
         ...userConfig,
         isSubscribed: true
@@ -100,15 +157,97 @@ bot.catch((err) => console.error('[ Bot error ]', err));
 
 // bot.start();
 
-// export const POST = webhookCallback(bot, 'std/http');
-
 export async function POST(req: Request) {
   const clonedRequest = req.clone();
   const body = await clonedRequest.json();
   console.log('POST_body', body);
 
-  const handler = webhookCallback(bot, 'std/http');
-  return await handler(req);
+  const example = {
+    "type": "bot",
+    "ticker": "{{ticker}}", 
+    "order_direction": "{{strategy.market_position}}",
+    "order_details": "{{strategy.order.alert_message}}",
+    "order_action": "{{strategy.order.action}}",
+    "order_price": "{{strategy.order.price}}"
+  };
+
+  try {
+    /** Если получили сообщение от tradingView */
+    if ('type' in body) {
+      if (body.type === 'bot') {
+        const tv_message = body as TVMessage;
+  
+        const tv_message_details: TVOrderDetails = JSON.parse(tv_message.order_details ?? null);
+  
+        let signal = '';
+        if (tv_message_details?.type === TV_OrderDetailsType.NEW) {
+          const takeProfits = tv_message_details.takeProfits ?? [];
+
+          const takeProfit_1 = takeProfits[0];
+          const takeProfit_2 = takeProfits[1];
+          const takeProfit_3 = takeProfits[2];  
+
+          const stopLoss = tv_message_details.stop; 
+
+          signal = parseStringToMD(`
+            🚨 *Smart Trader Notification* 🚨\n
+            *${tv_message.ticker}* - ${tv_message.order_action}\n
+            *Entry price*: ${tv_message.order_price}\n
+            🏆 *Take Profits*:
+            \\#1: ${takeProfit_1.price}
+            \\#2: ${takeProfit_2.price}
+            \\#3: ${takeProfit_3.price}\n
+            ❌ *Stop Loss*: ${stopLoss}\n
+            📈 Удачи в торговле\\!`);          
+        }
+
+        if (tv_message_details?.type === TV_OrderDetailsType.CLOSE) {
+          signal = parseStringToMD(`
+            🚨 *Smart Trader Notification* 🚨\n
+            *${tv_message.ticker}* - ${tv_message.order_action}\n
+            ⚠️ *Exit price*: ${tv_message.order_price}`);  
+        }
+
+        if (tv_message_details?.type === TV_OrderDetailsType.PROFIT) {
+          signal = parseStringToMD(`
+            🚨 *Smart Trader Notification* 🚨\n
+            *${tv_message.ticker}* - ${tv_message.order_action}\n
+            ✅ Take Profit \\#${tv_message_details.order}
+            *Price*: ${tv_message.order_price}`);  
+        }
+
+        if (tv_message_details?.type === TV_OrderDetailsType.STOP) {
+          signal = parseStringToMD(`
+            🚨 *Smart Trader Notification* 🚨\n
+            *${tv_message.ticker}* - ${tv_message.order_action}\n
+            ❌ *Stop price*: ${tv_message.order_price}`);  
+        }
+
+        if (signal === '') {
+          return NextResponse.json('OK');
+        }
+  
+  
+        const users = await kv.get<UserInfo[]>('users') ?? [];
+        const activeUsers = users.filter(({ isActive }) => isActive);
+        
+  
+  
+        const promises = activeUsers.map(({ chatId}) => {
+          bot.api.sendMessage(chatId, signal, { parse_mode: 'MarkdownV2' });
+        });
+        await Promise.all(promises);
+  
+        return NextResponse.json('OK');
+      }
+    }
+
+    /** Если получили сообщение от telegram */
+    const handler = webhookCallback(bot, 'std/http');
+    return await handler(req);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export const GET = async () => { 

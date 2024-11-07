@@ -35,12 +35,8 @@ bot.command('start', async (ctx) => {
   const userName = ctx.from?.first_name ?? (ctx.from?.language_code === 'en' ? 'User' : 'Пользователь');
   const chatId = ctx.chat.id;
 
-  const { userStates, userConfig } = ctx.session;
+  const { userStates } = ctx.session;
   userStates[chatId] = UserState.AUTH;
-
-  const users = await kv.get<UserInfo[]>('users') ?? [];
-  console.log('users', { users, chatId });
-
 
   const storage = await botStorage.read(chatId.toString());
 
@@ -49,31 +45,6 @@ bot.command('start', async (ctx) => {
   if (isSubscribed) {
     return ctx.reply('Вы уже подписаны на сигналы.');
   }
-
-  // const signal = parseStringToMD(`
-  //   🚨 *Smart Trader Notification* 🚨\n
-  //   *BTCUSDT* - buy
-  //   ${72589.62}\n
-  //   🏆 *Take Profits*:
-  //   \\#1: ${73579.76}
-  //   \\#2: ${74549}
-  //   \\#3: ${75509.4}\n
-  //   ❌ *Stop Loss*: ${69589.62}\n
-  //   📈 Удачи в торговле\\!`);
-
-  // const signal = parseStringToMD(`
-  //   🚨 *Smart Trader Notification* 🚨\n
-  //   *BTCUSDT* - exit\n
-  //   *Exit price*: ${72589.62}`);  
-
-  // await ctx.reply(
-  //   signal,
-  //   {
-  //     parse_mode: 'MarkdownV2'
-  //   }
-  // );
-
-  // return;
 
   await ctx.reply(
     `*Добро пожаловать, ${userName}*\\.\n\nВведите ваш личный ключ доступа, чтобы начать работу бота\\.`,
@@ -162,15 +133,6 @@ export async function POST(req: Request) {
   const body = await clonedRequest.json();
   console.log('POST_body', body);
 
-  const example = {
-    "type": "bot",
-    "ticker": "{{ticker}}", 
-    "order_direction": "{{strategy.market_position}}",
-    "order_details": "{{strategy.order.alert_message}}",
-    "order_action": "{{strategy.order.action}}",
-    "order_price": "{{strategy.order.price}}"
-  };
-
   try {
     /** Если получили сообщение от tradingView */
     if ('type' in body) {
@@ -224,19 +186,21 @@ export async function POST(req: Request) {
         }
 
         if (signal === '') {
+          console.log('POST', 'signal is empty');
           return NextResponse.json('OK');
         }
   
   
         const users = await kv.get<UserInfo[]>('users') ?? [];
         const activeUsers = users.filter(({ isActive }) => isActive);
-        
   
-  
-        const promises = activeUsers.map(({ chatId}) => {
-          bot.api.sendMessage(chatId, signal, { parse_mode: 'MarkdownV2' });
+        const promises = activeUsers.map(async ({ chatId}) => {
+          await bot.api.sendMessage(chatId, signal, { parse_mode: 'MarkdownV2' });
         });
         await Promise.all(promises);
+
+
+        console.log('POST signal sent', { activeUsers: activeUsers.length, signal });
   
         return NextResponse.json('OK');
       }

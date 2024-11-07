@@ -104,10 +104,9 @@ bot.catch((err) => console.error('[ Bot error ]', err));
 
 export async function POST(req: Request) {
   // Pass raw body to the webhook callback
-  const json = await req.json();
-  const update = req.body;
-  console.log('POST_req', req);
-  console.log('POST_body', json);
+  const bodyPromise = req.json;
+  const body = await bodyPromise();
+  console.log('POST_body', body);
   const handler = webhookCallback(bot, 'std/http');
   return await handler(req);
 }

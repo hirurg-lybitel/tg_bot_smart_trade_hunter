@@ -1,0 +1,128 @@
+{
+	"info": {
+		"_postman_id": "b4cbe448-2745-4ba3-a43a-1c34d2b65273",
+		"name": "Smart Trader Bot",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Entry Position",
+			"id": "5cbfad8c-08a7-4253-b573-9b9f55cfaa58",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"bot\",\r\n    \"ticker\": \"BTCUSDT\",\r\n    \"order_direction\": \"long\",\r\n    \"order_details\": \"{\\\"type\\\":\\\"new\\\",\\\"takeProfits\\\":[{\\\"price\\\":\\\"73000\\\",\\\"qty_perc\\\":\\\"50\\\"},{\\\"price\\\":\\\"74000\\\",\\\"qty_perc\\\":\\\"25\\\"},{\\\"price\\\":\\\"75000\\\",\\\"qty_perc\\\":\\\"25\\\"}],\\\"stop\\\":\\\"69000\\\"}\",\r\n    \"order_action\": \"buy\",\r\n    \"order_price\": \"72000\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/api/bot"
+			},
+			"response": []
+		},
+		{
+			"name": "Take Profit",
+			"id": "b2418ee3-e5a4-46bf-b55a-9c459bcd4786",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"bot\",\r\n    \"ticker\": \"BTCUSDT\",\r\n    \"order_direction\": \"long\",\r\n    \"order_details\": \"{\\\"type\\\":\\\"profit\\\",\\\"order\\\":\\\"1\\\"}\",\r\n    \"order_action\": \"sell\",\r\n    \"order_price\": \"74000\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/api/bot"
+			},
+			"response": []
+		},
+		{
+			"name": "Exit",
+			"id": "c2787b64-a438-4369-8ea2-eba7bf1cca3d",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"bot\",\r\n    \"ticker\": \"BTCUSDT\",\r\n    \"order_direction\": \"long\",\r\n    \"order_details\": \"{\\\"type\\\":\\\"close\\\"}\",\r\n    \"order_action\": \"sell\",\r\n    \"order_price\": \"73500\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/api/bot"
+			},
+			"response": []
+		},
+		{
+			"name": "Stop",
+			"id": "4d1b22bf-d954-4804-bafd-46fd1fa4b46d",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"bot\",\r\n    \"ticker\": \"BTCUSDT\",\r\n    \"order_direction\": \"long\",\r\n    \"order_details\": \"{\\\"type\\\":\\\"stop\\\"}\",\r\n    \"order_action\": \"sell\",\r\n    \"order_price\": \"69000\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/api/bot"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				],
+				"id": "2af2d756-2b45-4382-87d2-f63cb5f7c5e3"
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				],
+				"id": "56092b3d-39aa-4ef6-a78b-69f80d5948c6"
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8443",
+			"type": "string"
+		}
+	]
+}

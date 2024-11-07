@@ -99,7 +99,7 @@ bot.catch((err) => console.error('[ Bot error ]', err));
 
 // bot.start();
 
-// export const POST = webhookCallback(bot, 'std/http');
+export const POST = webhookCallback(bot, 'std/http');
 
 export const GET = async () => { 
   return Response.json('Hello from Bot API!');

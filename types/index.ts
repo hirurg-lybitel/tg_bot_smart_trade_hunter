@@ -18,24 +18,9 @@ export interface UserStates {
     [key: number]: UserState;
   }
 
-export type TimeIntervalType = 'minutes' | 'hours' | 'days' | 'months';
-export type TimeInterval = {
-    type: TimeIntervalType,
-    value: number;
-}
-
 export type BotConfig = {
-    percent: number;
     lang: Language;
-    interval: TimeInterval;
 }
-
-export type TrackedPrices = {
-    [key: string]: {
-        prevPrice?: number;
-        lastPrice?: number;
-    }
-};
 
 export type UserConfig = {
     botConfig?: BotConfig;

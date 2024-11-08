@@ -129,6 +129,7 @@ bot.catch((err) => console.error('[ Bot error ]', err));
 // bot.start();
 
 export async function POST(req: Request) {
+  console.log('POST_pre_body', { body: req.body });
   const clonedRequest = req.clone();
   const body = await clonedRequest.json();
   console.log('POST_body', { cond: 'type' in body, body });

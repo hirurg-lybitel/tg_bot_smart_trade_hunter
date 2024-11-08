@@ -6,6 +6,12 @@ import { kv } from '@vercel/kv';
 import { NextResponse } from "next/server";
 import { parseStringToMD } from "@/helpers";
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 type MyContext = HydrateFlavor<Context> & SessionFlavor<SessionData>;
 
 

@@ -7,11 +7,11 @@ import { NextResponse } from "next/server";
 import { parseStringToMD } from "@/helpers";
 // import getRawBody from "raw-body";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
 
 type MyContext = HydrateFlavor<Context> & SessionFlavor<SessionData>;
 

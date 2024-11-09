@@ -5,6 +5,7 @@ import { Bot, Context, session, SessionFlavor, webhookCallback } from "grammy";
 import { kv } from '@vercel/kv';
 import { NextResponse } from "next/server";
 import { parseStringToMD } from "@/helpers";
+// import getRawBody from "raw-body";
 
 export const config = {
   api: {
@@ -137,6 +138,11 @@ bot.catch((err) => console.error('[ Bot error ]', err));
 export async function POST(req: Request) {
   console.log('POST_pre_body', { body: req.body });
   const clonedRequest = req.clone();
+
+  // const bodyRaw = getRawBody(req);
+
+  const rawBody = await req.text();
+  console.log('bodyRaw', { rawBody });
   const body = await clonedRequest.json();
   console.log('POST_body', { cond: 'type' in body, body });
 
